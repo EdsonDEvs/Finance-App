@@ -1,0 +1,9 @@
+POST https://us-central1-finance-app-452d3.cloudfunctions.net/whatsappWebhook
+Content-Type: application/json
+
+{
+  "message": {
+    "from": "+5511999999999",
+    "text": "Olá, gostaria de ver meu saldo"
+  }
+} 
