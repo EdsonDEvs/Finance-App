@@ -1,244 +1,135 @@
-import React, { useState } from 'react';
-import {
-  Grid,
-  Paper,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  MenuItem,
-  Box,
-} from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
-import Layout from '../components/Layout';
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { transactionService, Transaction } from '../services/transactionService';
+import ProtectedRoute from '../components/ProtectedRoute';
+import { Container, Typography, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Paper, Box, TextField, Button, MenuItem, Alert } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
-interface Transaction {
-  id: string;
-  date: string;
-  description: string;
-  amount: number;
-  type: 'income' | 'expense';
-  category: string;
-}
+export default function Transactions() {
+  const { currentUser } = useAuth();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [type, setType] = useState<'income' | 'expense'>('income');
+  const [category, setCategory] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-const categories = [
-  'Alimentação',
-  'Transporte',
-  'Moradia',
-  'Lazer',
-  'Saúde',
-  'Educação',
-  'Outros',
-];
+  useEffect(() => {
+    if (currentUser) {
+      loadTransactions();
+    }
+  }, [currentUser]);
 
-const Transactions = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    {
-      id: '1',
-      date: '2024-03-15',
-      description: 'Salário',
-      amount: 3000,
-      type: 'income',
-      category: 'Outros',
-    },
-    {
-      id: '2',
-      date: '2024-03-14',
-      description: 'Supermercado',
-      amount: 200,
-      type: 'expense',
-      category: 'Alimentação',
-    },
-  ]);
-
-  const [open, setOpen] = useState(false);
-  const [newTransaction, setNewTransaction] = useState<Partial<Transaction>>({
-    date: new Date().toISOString().split('T')[0],
-    type: 'expense',
-    category: 'Outros',
-  });
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-  const handleAddTransaction = () => {
-    if (
-      newTransaction.description &&
-      newTransaction.amount &&
-      newTransaction.date &&
-      newTransaction.type &&
-      newTransaction.category
-    ) {
-      const transaction: Transaction = {
-        id: Date.now().toString(),
-        ...newTransaction,
-      } as Transaction;
-
-      setTransactions([...transactions, transaction]);
-      handleClose();
-      setNewTransaction({
-        date: new Date().toISOString().split('T')[0],
-        type: 'expense',
-        category: 'Outros',
-      });
+  const loadTransactions = async () => {
+    if (currentUser) {
+      const userTransactions = await transactionService.getByUser(currentUser.uid);
+      setTransactions(userTransactions);
     }
   };
 
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    if (!description || !amount || !category) {
+      setError('Preencha todos os campos.');
+      return;
+    }
+    if (!currentUser) return;
+    try {
+      await transactionService.add({
+        userId: currentUser.uid,
+        description,
+        amount: Number(amount),
+        type,
+        category,
+        date: new Date().toISOString(),
+      });
+      setDescription('');
+      setAmount('');
+      setCategory('');
+      setType('income');
+      setSuccess('Transação adicionada com sucesso!');
+      loadTransactions();
+    } catch (err: any) {
+      setError(err.message || 'Erro ao adicionar transação.');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    await transactionService.delete(id);
+    loadTransactions();
+  };
+
   return (
-    <Layout>
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Paper sx={{ p: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="h6">Transações</Typography>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleOpen}
-              >
-                Nova Transação
-              </Button>
-            </Box>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Data</TableCell>
-                    <TableCell>Descrição</TableCell>
-                    <TableCell>Categoria</TableCell>
-                    <TableCell align="right">Valor</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {transactions.map((transaction) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell>{transaction.date}</TableCell>
-                      <TableCell>{transaction.description}</TableCell>
-                      <TableCell>{transaction.category}</TableCell>
-                      <TableCell
-                        align="right"
-                        sx={{
-                          color:
-                            transaction.type === 'income'
-                              ? 'success.main'
-                              : 'error.main',
-                        }}
-                      >
-                        {transaction.type === 'income' ? '+' : '-'} R${' '}
-                        {Math.abs(transaction.amount).toLocaleString('pt-BR')}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
-        </Grid>
-      </Grid>
-
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Nova Transação</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Descrição"
-                value={newTransaction.description || ''}
-                onChange={(e) =>
-                  setNewTransaction({
-                    ...newTransaction,
-                    description: e.target.value,
-                  })
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Data"
-                value={newTransaction.date}
-                onChange={(e) =>
-                  setNewTransaction({
-                    ...newTransaction,
-                    date: e.target.value,
-                  })
-                }
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                type="number"
-                label="Valor"
-                value={newTransaction.amount || ''}
-                onChange={(e) =>
-                  setNewTransaction({
-                    ...newTransaction,
-                    amount: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                select
-                label="Tipo"
-                value={newTransaction.type}
-                onChange={(e) =>
-                  setNewTransaction({
-                    ...newTransaction,
-                    type: e.target.value as 'income' | 'expense',
-                  })
-                }
-              >
-                <MenuItem value="income">Receita</MenuItem>
-                <MenuItem value="expense">Despesa</MenuItem>
-              </TextField>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                select
-                label="Categoria"
-                value={newTransaction.category}
-                onChange={(e) =>
-                  setNewTransaction({
-                    ...newTransaction,
-                    category: e.target.value,
-                  })
-                }
-              >
-                {categories.map((category) => (
-                  <MenuItem key={category} value={category}>
-                    {category}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
-          <Button onClick={handleAddTransaction} variant="contained">
-            Adicionar
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Layout>
+    <ProtectedRoute>
+      <Container>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Transações
+        </Typography>
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Typography variant="h6" gutterBottom>Adicionar Transação</Typography>
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+          <Box component="form" onSubmit={handleAdd} sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <TextField
+              label="Descrição"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              required
+            />
+            <TextField
+              label="Valor"
+              type="number"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              required
+            />
+            <TextField
+              select
+              label="Tipo"
+              value={type}
+              onChange={e => setType(e.target.value as 'income' | 'expense')}
+              required
+              sx={{ minWidth: 120 }}
+            >
+              <MenuItem value="income">Receita</MenuItem>
+              <MenuItem value="expense">Despesa</MenuItem>
+            </TextField>
+            <TextField
+              label="Categoria"
+              value={category}
+              onChange={e => setCategory(e.target.value)}
+              required
+            />
+            <Button type="submit" variant="contained" sx={{ minWidth: 150 }}>
+              Adicionar
+            </Button>
+          </Box>
+        </Paper>
+        <Paper>
+          <List>
+            {transactions.map((transaction) => (
+              <ListItem key={transaction.id}>
+                <ListItemText
+                  primary={transaction.description}
+                  secondary={`${transaction.type === 'income' ? '+' : '-'} R$ ${transaction.amount.toLocaleString('pt-BR')} - ${transaction.category}`}
+                />
+                <ListItemSecondaryAction>
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    onClick={() => transaction.id && handleDelete(transaction.id)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
+      </Container>
+    </ProtectedRoute>
   );
-};
-
-export default Transactions;
+}
