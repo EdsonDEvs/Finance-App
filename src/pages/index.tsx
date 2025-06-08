@@ -14,7 +14,6 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import Layout from '../components/Layout';
 import { FinancialAssistant } from '../components/FinancialAssistant';
 import { useTheme } from '@mui/material/styles';
 
@@ -123,49 +122,47 @@ const Dashboard = () => {
   };
 
   return (
-    <Layout>
-      <Box sx={{ maxWidth: 1200, mx: 'auto', width: '100%', p: { xs: 1, sm: 2, md: 3 } }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
-            <Paper sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
-              <Typography variant="h6" gutterBottom sx={{ color: isDarkMode ? '#ffffff' : 'inherit' }}>
-                Resumo Financeiro
-              </Typography>
-              <Box sx={{ height: { xs: 200, sm: 250, md: 300 } }}>
-                <Line data={chartData} options={chartOptions} />
-              </Box>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ p: { xs: 1, sm: 2, md: 3 }, mb: 2 }}>
-              <Typography variant="h6" gutterBottom sx={{ color: isDarkMode ? '#ffffff' : 'inherit' }}>
-                Saldo Atual
-              </Typography>
-              <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
-                R$ {financialContext.balance.toLocaleString('pt-BR')}
-              </Typography>
-            </Paper>
-            <Paper sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
-              <Typography variant="h6" gutterBottom sx={{ color: isDarkMode ? '#ffffff' : 'inherit' }}>
-                Categorias de Gastos
-              </Typography>
-              {financialContext.topCategories.map((category) => (
-                <Box key={category} sx={{ mb: 1 }}>
-                  <Typography variant="body2" sx={{ color: isDarkMode ? '#e0e0e0' : 'inherit' }}>
-                    {category}
-                  </Typography>
-                </Box>
-              ))}
-            </Paper>
-          </Grid>
-          <Grid item xs={12}>
-            <Paper sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
-              <FinancialAssistant financialContext={financialContext} />
-            </Paper>
-          </Grid>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', width: '100%', p: { xs: 1, sm: 2, md: 3 }, transition: 'all 0.3s ease-in-out' }}>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={8}>
+          <Paper sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+            <Typography variant="h6" gutterBottom sx={{ color: isDarkMode ? '#ffffff' : 'inherit' }}>
+              Resumo Financeiro
+            </Typography>
+            <Box sx={{ height: { xs: 200, sm: 250, md: 300 } }}>
+              <Line data={chartData} options={chartOptions} />
+            </Box>
+          </Paper>
         </Grid>
-      </Box>
-    </Layout>
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ p: { xs: 1, sm: 2, md: 3 }, mb: 2 }}>
+            <Typography variant="h6" gutterBottom sx={{ color: isDarkMode ? '#ffffff' : 'inherit' }}>
+              Saldo Atual
+            </Typography>
+            <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
+              R$ {financialContext.balance.toLocaleString('pt-BR')}
+            </Typography>
+          </Paper>
+          <Paper sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+            <Typography variant="h6" gutterBottom sx={{ color: isDarkMode ? '#ffffff' : 'inherit' }}>
+              Categorias de Gastos
+            </Typography>
+            {financialContext.topCategories.map((category) => (
+              <Box key={category} sx={{ mb: 1 }}>
+                <Typography variant="body2" sx={{ color: isDarkMode ? '#e0e0e0' : 'inherit' }}>
+                  {category}
+                </Typography>
+              </Box>
+            ))}
+          </Paper>
+        </Grid>
+        <Grid item xs={12}>
+          <Paper sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+            <FinancialAssistant financialContext={financialContext} />
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 

@@ -19,7 +19,7 @@ import {
   LinearScale,
   BarElement,
 } from 'chart.js';
-import Layout from '../components/Layout';
+import { useTheme } from '@mui/material/styles';
 
 ChartJS.register(
   ArcElement,
@@ -32,6 +32,8 @@ ChartJS.register(
 
 const Reports = () => {
   const [period, setPeriod] = React.useState('month');
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
 
   const categoryData = {
     labels: ['Alimentação', 'Transporte', 'Moradia', 'Lazer', 'Saúde'],
@@ -66,89 +68,103 @@ const Reports = () => {
   };
 
   return (
-    <Layout>
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Paper sx={{ p: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="h6">Relatórios</Typography>
-              <FormControl sx={{ minWidth: 120 }}>
-                <InputLabel>Período</InputLabel>
-                <Select
-                  value={period}
-                  label="Período"
-                  onChange={(e) => setPeriod(e.target.value)}
-                >
-                  <MenuItem value="week">Semana</MenuItem>
-                  <MenuItem value="month">Mês</MenuItem>
-                  <MenuItem value="year">Ano</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-          </Paper>
-        </Grid>
+    <Box sx={{
+      maxWidth: 1200,
+      mx: 'auto',
+      width: '100%',
+      p: { xs: 1, sm: 2, md: 3 },
+      transition: 'all 0.3s ease-in-out'
+    }}>
+      <Paper sx={{
+        p: { xs: 1, sm: 2, md: 3 },
+        transition: 'all 0.3s ease-in-out'
+      }}>
+        <Typography variant="h6" gutterBottom sx={{ color: isDarkMode ? '#ffffff' : 'inherit' }}>
+          Relatórios
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Paper sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Typography variant="h6">Relatórios</Typography>
+                <FormControl sx={{ minWidth: 120 }}>
+                  <InputLabel>Período</InputLabel>
+                  <Select
+                    value={period}
+                    label="Período"
+                    onChange={(e) => setPeriod(e.target.value)}
+                  >
+                    <MenuItem value="week">Semana</MenuItem>
+                    <MenuItem value="month">Mês</MenuItem>
+                    <MenuItem value="year">Ano</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+            </Paper>
+          </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Distribuição de Gastos por Categoria
-            </Typography>
-            <Box sx={{ height: 300 }}>
-              <Pie data={categoryData} options={{ maintainAspectRatio: false }} />
-            </Box>
-          </Paper>
-        </Grid>
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Distribuição de Gastos por Categoria
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <Pie data={categoryData} options={{ maintainAspectRatio: false }} />
+              </Box>
+            </Paper>
+          </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Receitas vs Despesas
-            </Typography>
-            <Box sx={{ height: 300 }}>
-              <Bar
-                data={monthlyData}
-                options={{
-                  maintainAspectRatio: false,
-                  scales: {
-                    y: {
-                      beginAtZero: true,
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Receitas vs Despesas
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <Bar
+                  data={monthlyData}
+                  options={{
+                    maintainAspectRatio: false,
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                      },
                     },
-                  },
-                }}
-              />
-            </Box>
-          </Paper>
-        </Grid>
+                  }}
+                />
+              </Box>
+            </Paper>
+          </Grid>
 
-        <Grid item xs={12}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Resumo do Período
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={4}>
-                <Paper sx={{ p: 2, bgcolor: 'success.light' }}>
-                  <Typography variant="subtitle2">Receitas Totais</Typography>
-                  <Typography variant="h6">R$ 18.700,00</Typography>
-                </Paper>
+          <Grid item xs={12}>
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Resumo do Período
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={4}>
+                  <Paper sx={{ p: 2, bgcolor: 'success.light' }}>
+                    <Typography variant="subtitle2">Receitas Totais</Typography>
+                    <Typography variant="h6">R$ 18.700,00</Typography>
+                  </Paper>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Paper sx={{ p: 2, bgcolor: 'error.light' }}>
+                    <Typography variant="subtitle2">Despesas Totais</Typography>
+                    <Typography variant="h6">R$ 12.200,00</Typography>
+                  </Paper>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Paper sx={{ p: 2, bgcolor: 'info.light' }}>
+                    <Typography variant="subtitle2">Saldo</Typography>
+                    <Typography variant="h6">R$ 6.500,00</Typography>
+                  </Paper>
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm={4}>
-                <Paper sx={{ p: 2, bgcolor: 'error.light' }}>
-                  <Typography variant="subtitle2">Despesas Totais</Typography>
-                  <Typography variant="h6">R$ 12.200,00</Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Paper sx={{ p: 2, bgcolor: 'info.light' }}>
-                  <Typography variant="subtitle2">Saldo</Typography>
-                  <Typography variant="h6">R$ 6.500,00</Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Paper>
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
-    </Layout>
+      </Paper>
+    </Box>
   );
 };
 

@@ -15,12 +15,12 @@ import {
   IconButton,
   Alert,
 } from '@mui/material';
-import Layout from '../components/Layout';
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../config/firebase';
 import { collection, addDoc, getDocs, deleteDoc, query, where, Timestamp } from 'firebase/firestore';
 import ProtectedRoute from '../components/ProtectedRoute';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useTheme } from '@mui/material/styles';
 
 interface Reminder {
   id?: string;
@@ -52,6 +52,8 @@ const Settings = () => {
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
 
   useEffect(() => {
     if (currentUser) {
@@ -124,188 +126,175 @@ const Settings = () => {
 
   return (
     <ProtectedRoute>
-      <Layout>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Paper sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                Configurações
-              </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Nome"
-                    value={settings.name}
-                    onChange={(e) => handleChange('name', e.target.value)}
-                  />
+      <Box sx={{
+        maxWidth: 1200,
+        mx: 'auto',
+        width: '100%',
+        p: { xs: 1, sm: 2, md: 3 },
+        transition: 'all 0.3s ease-in-out'
+      }}>
+        <Paper sx={{
+          p: { xs: 1, sm: 2, md: 3 },
+          transition: 'all 0.3s ease-in-out'
+        }}>
+          <Typography variant="h6" gutterBottom sx={{ color: isDarkMode ? '#ffffff' : 'inherit' }}>
+            Configurações
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  Preferências
+                </Typography>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      select
+                      label="Moeda"
+                      value={settings.currency}
+                      onChange={(e) => handleChange('currency', e.target.value)}
+                    >
+                      <option value="BRL">Real (BRL)</option>
+                      <option value="USD">Dólar (USD)</option>
+                      <option value="EUR">Euro (EUR)</option>
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      select
+                      label="Idioma"
+                      value={settings.language}
+                      onChange={(e) => handleChange('language', e.target.value)}
+                    >
+                      <option value="pt-BR">Português (Brasil)</option>
+                      <option value="en-US">English (US)</option>
+                      <option value="es">Español</option>
+                    </TextField>
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Email"
-                    type="email"
-                    value={settings.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                  />
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
+              </Paper>
+            </Grid>
 
-          <Grid item xs={12}>
-            <Paper sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                Preferências
-              </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    select
-                    label="Moeda"
-                    value={settings.currency}
-                    onChange={(e) => handleChange('currency', e.target.value)}
-                  >
-                    <option value="BRL">Real (BRL)</option>
-                    <option value="USD">Dólar (USD)</option>
-                    <option value="EUR">Euro (EUR)</option>
-                  </TextField>
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  Notificações
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={settings.notifications.email}
+                          onChange={(e) =>
+                            handleNotificationChange('email', e.target.checked)
+                          }
+                        />
+                      }
+                      label="Notificações por Email"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={settings.notifications.push}
+                          onChange={(e) =>
+                            handleNotificationChange('push', e.target.checked)
+                          }
+                        />
+                      }
+                      label="Notificações Push"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={settings.notifications.whatsapp}
+                          onChange={(e) =>
+                            handleNotificationChange('whatsapp', e.target.checked)
+                          }
+                        />
+                      }
+                      label="Notificações WhatsApp"
+                    />
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    select
-                    label="Idioma"
-                    value={settings.language}
-                    onChange={(e) => handleChange('language', e.target.value)}
-                  >
-                    <option value="pt-BR">Português (Brasil)</option>
-                    <option value="en-US">English (US)</option>
-                    <option value="es">Español</option>
-                  </TextField>
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
+              </Paper>
+            </Grid>
 
-          <Grid item xs={12}>
-            <Paper sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                Notificações
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={settings.notifications.email}
-                        onChange={(e) =>
-                          handleNotificationChange('email', e.target.checked)
-                        }
-                      />
-                    }
-                    label="Notificações por Email"
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  Lembretes de Contas a Pagar
+                </Typography>
+                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+                <Box component="form" onSubmit={handleAdd} sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                  <TextField
+                    label="Nome da Conta"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    required
                   />
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={settings.notifications.push}
-                        onChange={(e) =>
-                          handleNotificationChange('push', e.target.checked)
-                        }
-                      />
-                    }
-                    label="Notificações Push"
+                  <TextField
+                    label="Valor"
+                    type="number"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                    required
                   />
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={settings.notifications.whatsapp}
-                        onChange={(e) =>
-                          handleNotificationChange('whatsapp', e.target.checked)
-                        }
-                      />
-                    }
-                    label="Notificações WhatsApp"
+                  <TextField
+                    label="Data de Vencimento"
+                    type="date"
+                    value={dueDate}
+                    onChange={e => setDueDate(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    required
                   />
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
+                  <TextField
+                    label="Observação"
+                    value={note}
+                    onChange={e => setNote(e.target.value)}
+                  />
+                  <Button type="submit" variant="contained" sx={{ minWidth: 150 }}>
+                    Adicionar
+                  </Button>
+                </Box>
+              </Paper>
+            </Grid>
 
-          <Grid item xs={12}>
-            <Paper sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                Lembretes de Contas a Pagar
-              </Typography>
-              {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-              {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-              <Box component="form" onSubmit={handleAdd} sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                <TextField
-                  label="Nome da Conta"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  required
-                />
-                <TextField
-                  label="Valor"
-                  type="number"
-                  value={amount}
-                  onChange={e => setAmount(e.target.value)}
-                  required
-                />
-                <TextField
-                  label="Data de Vencimento"
-                  type="date"
-                  value={dueDate}
-                  onChange={e => setDueDate(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                  required
-                />
-                <TextField
-                  label="Observação"
-                  value={note}
-                  onChange={e => setNote(e.target.value)}
-                />
-                <Button type="submit" variant="contained" sx={{ minWidth: 150 }}>
-                  Adicionar
+            <Grid item xs={12}>
+              <Paper>
+                <List>
+                  {reminders.map((reminder) => (
+                    <ListItem key={reminder.id}>
+                      <ListItemText
+                        primary={`${reminder.name} - R$ ${reminder.amount.toLocaleString('pt-BR')}`}
+                        secondary={`Vencimento: ${reminder.dueDate}${reminder.note ? ' | ' + reminder.note : ''}`}
+                      />
+                      <IconButton edge="end" aria-label="delete" onClick={() => reminder.id && handleDelete(reminder.id)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button variant="contained" onClick={handleSave}>
+                  Salvar Configurações
                 </Button>
               </Box>
-            </Paper>
+            </Grid>
           </Grid>
-
-          <Grid item xs={12}>
-            <Paper>
-              <List>
-                {reminders.map((reminder) => (
-                  <ListItem key={reminder.id}>
-                    <ListItemText
-                      primary={`${reminder.name} - R$ ${reminder.amount.toLocaleString('pt-BR')}`}
-                      secondary={`Vencimento: ${reminder.dueDate}${reminder.note ? ' | ' + reminder.note : ''}`}
-                    />
-                    <IconButton edge="end" aria-label="delete" onClick={() => reminder.id && handleDelete(reminder.id)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItem>
-                ))}
-              </List>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Button variant="contained" onClick={handleSave}>
-                Salvar Configurações
-              </Button>
-            </Box>
-          </Grid>
-        </Grid>
-      </Layout>
+        </Paper>
+      </Box>
     </ProtectedRoute>
   );
 };

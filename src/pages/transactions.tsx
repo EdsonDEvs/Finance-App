@@ -4,8 +4,9 @@ import { transactionService, Transaction } from '../services/transactionService'
 import ProtectedRoute from '../components/ProtectedRoute';
 import { Container, Typography, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Paper, Box, TextField, Button, MenuItem, Alert } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useTheme } from '@mui/material/styles';
 
-export default function Transactions() {
+const Transactions = () => {
   const { currentUser } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [description, setDescription] = useState('');
@@ -14,6 +15,8 @@ export default function Transactions() {
   const [category, setCategory] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
 
   useEffect(() => {
     if (currentUser) {
@@ -63,9 +66,18 @@ export default function Transactions() {
   };
 
   return (
-    <ProtectedRoute>
-      <Container>
-        <Typography variant="h4" component="h1" gutterBottom>
+    <Box sx={{
+      maxWidth: 1200,
+      mx: 'auto',
+      width: '100%',
+      p: { xs: 1, sm: 2, md: 3 },
+      transition: 'all 0.3s ease-in-out'
+    }}>
+      <Paper sx={{
+        p: { xs: 1, sm: 2, md: 3 },
+        transition: 'all 0.3s ease-in-out'
+      }}>
+        <Typography variant="h6" gutterBottom sx={{ color: isDarkMode ? '#ffffff' : 'inherit' }}>
           Transações
         </Typography>
         <Paper sx={{ p: 2, mb: 2 }}>
@@ -129,7 +141,9 @@ export default function Transactions() {
             ))}
           </List>
         </Paper>
-      </Container>
-    </ProtectedRoute>
+      </Paper>
+    </Box>
   );
-}
+};
+
+export default Transactions;
